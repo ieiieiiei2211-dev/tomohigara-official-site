@@ -1,0 +1,61 @@
+/* 基本設定 */
+body {
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: sans-serif;
+  margin: 0;
+}
+
+/* ===============================================
+   お問い合わせセクション & フォーム
+   =============================================== */
+#contact {
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 28px 32px;
+  text-align: center;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid #2f2f2f;
+  border-radius: 12px;
+}
+
+#contact h2 { font-size: 2.5rem; margin-bottom: 15px; }
+#contact p { max-width: 500px; margin: 0 auto 40px; line-height: 1.8; color: #e0e0e0; }
+.form-group { margin-bottom: 18px; text-align: left; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #e7e7e7; }
+.form-group input, .form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background-color: #2b2b2b;
+  border: 1px solid #474747;
+  border-radius: 8px;
+  color: #f0f0f0;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+.form-group textarea { resize: vertical; }
+.form-group input:focus, .form-group textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.25);
+}
+.cta-button {
+  width: 100%;
+  padding: 12px 14px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(180deg, #1e6bff, #155de6);
+  cursor: pointer;
+}
+
+/* フッター */
+footer {
+  text-align: center;
+  color: #aaa;
+  font-size: .92rem;
+  padding: 24px 16px 40px;
+  border-top: 1px solid #2f2f2f;
+}
