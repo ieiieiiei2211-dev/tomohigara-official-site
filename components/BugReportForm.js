@@ -222,7 +222,7 @@ console.log("現在のエラーステート:", error);
 
   // --- 通常時・送信中・エラー時のフォーム表示 ---
   return (
-    <form name="game-bug-report" data-netlify="true" netlify-honeypot="bot-field" onSubmit={handleSubmit} encType="multipart/form-data">
+    <form name="game-bug-report" data-netlify="true" netlify-honeot="bot-field" onSubmit={handleSubmit} encType="multipart/form-data">
       {/* ... (隠しフィールド、名前入力) ... */}
 
       {/* --- ★発生頻度 (Select Box)★ --- */}
@@ -294,7 +294,7 @@ console.log("現在のエラーステート:", error);
       <div className="form-group">
         <label htmlFor="screenshot-button">スクリーンショット (任意)</label>
 
-        <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '-5px', marginBottom: '10px' }}>
+        <p style={{ fontSize: '0.8rem', color: '#ffffff', marginTop: '-5px', marginBottom: '10px' }}>
           最大10MBまでの画像ファイル (PNG, JPG, GIF) を添付できます。
         </p>
         

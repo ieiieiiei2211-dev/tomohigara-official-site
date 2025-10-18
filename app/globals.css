@@ -1,7 +1,8 @@
 /* 基本設定 */
 body {
   background-color: #121212;
-  background-image: url('/main-visual.png');
+  /* 半透明の黒いオーバーレイを重ねて明度を落とす */
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/main-visual.png');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -19,7 +20,7 @@ body {
   margin: 80px auto;
   padding: 28px 32px;
   text-align: center;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.75);
   border: 1px solid #2f2f2f;
   border-radius: 12px;
 }
@@ -44,6 +45,14 @@ body {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59,130,246,.25);
 }
+
+/* ★ プレースホルダーテキストの色を白に設定 ★ */
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #ffffff;
+  opacity: 1; /* Firefoxのデフォルト透明度を上書き */
+}
+
 .cta-button {
   width: 100%;
   padding: 12px 14px;
@@ -98,7 +107,7 @@ footer {
 
 /* ペーストエリアのプレースホルダーテキスト */
 .paste-area-placeholder {
-  color: #aaa;
+  color: #ffffff; /* ★ '#aaa' から '#ffffff' に変更 ★ */
   width: 100%;
   margin: 0; /* pタグのデフォルトマージンをリセット */
 }
