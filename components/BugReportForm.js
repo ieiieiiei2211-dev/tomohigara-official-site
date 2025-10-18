@@ -16,7 +16,11 @@ export default function BugReportForm() {
   // { file: File, previewUrl: string } の配列としてスクリーンショットを管理
   const [screenshots, setScreenshots] = useState([]);
   const [submissionStatus, setSubmissionStatus] = useState('idle');
-  const [error, setError] = useState('');
+  const [error, setError] = useState({}); // ★ nullではなく空オブジェクトを初期値にします
+  const [frequency, setFrequency] = useState(''); // 発生頻度用
+  const [severity, setSeverity] = useState('');   // 深刻度用
+  const [steps, setSteps] = useState('');         // 再現手順用
+  const [gameVersion, setGameVersion] = useState(''); // ゲームバージョン用 (任意)
 
   // --- Ref定義 ---
   const fileInputRef = useRef(null); // 隠しファイル入力への参照
@@ -40,18 +44,24 @@ export default function BugReportForm() {
     });
 
     // 合計枚数チェック
-    if (screenshots.length + validFiles.length > 10) {
-      setError('画像は最大10枚まで添付できます。');
-      if (fileInputRef.current) { fileInputRef.current.value = ''; }
-      return;
-    }
+  if (screenshots.length + validFiles.length > 10) {
+    // ★ 既存のエラーを保持しつつ、ファイルエラーを追加/上書き ★
+    setError(prev => ({ ...prev, file: '画像は最大10枚まで添付できます。' })); 
+    if (fileInputRef.current) { fileInputRef.current.value = ''; }
+    return;
+  }
 
-    // ファイルサイズチェック
-    if (sizeError) {
-      setError(`ファイルサイズは10MBまでです。${validFiles.length > 0 ? '制限内のファイルのみ追加しました。' : ''}`);
-    } else {
-      setError(''); // エラーがなければクリア
-    }
+  // ファイルサイズチェック
+  if (sizeError) {
+    // ★ 既存のエラーを保持しつつ、ファイルエラーを追加/上書き ★
+    setError(prev => ({ ...prev, file: `ファイルサイズは10MBまでです。${validFiles.length > 0 ? '制限内のファイルのみ追加しました。' : ''}` }));
+  } else {
+    // ★ ファイル関連のエラーが解消された場合、fileキーのみを削除 ★
+    setError(prev => {
+      const { file, ...rest } = prev;
+      return rest;
+    });
+  }
 
     if (validFiles.length === 0) {
        if (fileInputRef.current) { fileInputRef.current.value = ''; }
@@ -122,49 +132,75 @@ export default function BugReportForm() {
 
   // --- 送信処理 ---
   const handleSubmit = (event) => {
+    console.log("handleSubmitが実行されました！");
     event.preventDefault();
-    if (message.trim() === '') { setError('不具合の詳細を入力してください。'); return; }
-    setSubmissionStatus('submitting'); setError('');
-
-    const formData = new FormData();
-    formData.append('form-name', 'game-bug-report');
-    formData.append('name', name);
-    formData.append('message', message);
-    if (screenshots.length > 0) {
-      screenshots.forEach(({ file }) => {
-        formData.append('screenshot', file);
-      });
+    const errors = {}; // エラーを保持するオブジェクト
+    if (frequency === '') {
+      errors.frequency = '発生頻度を選択してください。';
+    }
+    if (severity === '') {
+      errors.severity = '深刻度を選択してください。';
+    }
+    if (steps.trim() === '') {
+      errors.steps = '再現手順を入力してください。';
     }
 
-    fetch("/", { method: "POST", body: formData })
-      .then(response => { // ★ responseオブジェクトを受け取ります ★
-        // ★ Netlifyがエラーを返した場合 (例: フォームが見つからない等) をチェック ★
-        if (!response.ok) {
-          // fetch自体は成功したが、HTTPステータスがエラー (4xx or 5xx)
-          // エラー情報を付加して、意図的にエラーを発生させます
-          throw new Error(`サーバーエラー: ${response.status} ${response.statusText}`);
-        }
-        // ★ HTTPステータスが成功 (2xx) の場合 ★
-        setSubmissionStatus('success');
-        setName('');
-        setMessage('');
-        clearScreenshots();
-      })
-      .catch((fetchError) => { // ★ ネットワークエラー、または上記で投げたエラーの両方を捕捉 ★
-        setSubmissionStatus('error');
-        console.error("フォーム送信エラー:", fetchError); // デバッグ用にコンソールにエラー出力
+    // エラーが1つでもあれば、setErrorでまとめて更新し、処理を中断
+    if (Object.keys(errors).length > 0) {
+      console.log("エラーをセットしました:", errors); 
+      setError(errors); // ★ エラーオブジェクト全体をStateにセット ★
+    } else {
+      // ★ エラーがなかった場合のみ、このブロックを実行 ★
+      // エラー表示をクリアし、送信ステータスを更新
+      setError({});
+      setSubmissionStatus('submitting');
 
-        // ★ エラーメッセージを少し具体的に分岐 ★
-        if (fetchError.message.startsWith('サーバーエラー')) {
-          // 上記で throw したエラーの場合
-          setError('サーバー側で問題が発生しました。時間をおいて再試行してください。');
-        } else {
-          // fetch自体が失敗した場合（ネットワーク接続の問題など）
-          setError('送信に失敗しました。ネットワーク接続を確認してください。');
-        }
-      });
+      const formData = new FormData();
+      formData.append('form-name', 'game-bug-report');
+      formData.append('name', name);
+      formData.append('message', message);
+      formData.append('frequency', frequency);
+      formData.append('severity', severity);
+      formData.append('steps', steps);
+      formData.append('message', message); // 補足情報
+      formData.append('gameVersion', gameVersion);
+
+      if (screenshots.length > 0) {
+        screenshots.forEach(({ file }) => {
+          formData.append('screenshot', file);
+        });
+      }
+
+      fetch("/", { method: "POST", body: formData })
+        .then(response => { // ★ responseオブジェクトを受け取ります ★
+          // ★ Netlifyがエラーを返した場合 (例: フォームが見つからない等) をチェック ★
+          if (!response.ok) {
+            // fetch自体は成功したが、HTTPステータスがエラー (4xx or 5xx)
+            // エラー情報を付加して、意図的にエラーを発生させます
+            throw new Error(`サーバーエラー: ${response.status} ${response.statusText}`);
+          }
+          // ★ HTTPステータスが成功 (2xx) の場合 ★
+          setSubmissionStatus('success');
+          setName('');
+          setMessage('');
+          clearScreenshots();
+        })
+        .catch((fetchError) => { // ★ ネットワークエラー、または上記で投げたエラーの両方を捕捉 ★
+          setSubmissionStatus('error');
+          console.error("フォーム送信エラー:", fetchError); // デバッグ用にコンソールにエラー出力
+
+          // ★ エラーメッセージを少し具体的に分岐 ★
+          if (fetchError.message.startsWith('サーバーエラー')) {
+            // 上記で throw したエラーの場合
+            setError({ form: 'サーバー側で問題が発生しました。時間をおいて再試行してください。' });
+          } else {
+            // fetch自体が失敗した場合（ネットワーク接続の問題など）
+            setError({ form: '送信に失敗しました。ネットワーク接続を確認してください。' });
+          }
+        });
+    }
   };
-
+console.log("現在のエラーステート:", error);
   // --- 送信成功時の表示 ---
   if (submissionStatus === 'success') {
     return (
@@ -187,19 +223,72 @@ export default function BugReportForm() {
   // --- 通常時・送信中・エラー時のフォーム表示 ---
   return (
     <form name="game-bug-report" data-netlify="true" netlify-honeypot="bot-field" onSubmit={handleSubmit} encType="multipart/form-data">
-      <input type="hidden" name="form-name" value="game-bug-report" />
-      <p style={{ display: 'none' }}>
-        <label>
-          Don’t fill this out if you’re human: <input name="bot-field" />
-        </label>
-      </p>
+      {/* ... (隠しフィールド、名前入力) ... */}
 
-      {/* --- 名前入力 --- */}
+      {/* --- ★発生頻度 (Select Box)★ --- */}
+      {/* --- ★発生頻度 (Select Box)★ --- */}
       <div className="form-group">
-        <label htmlFor="name-bug">お名前 (任意)</label>
-        <input type="text" id="name-bug" name="name" value={name} onChange={(e) => setName(e.target.value)} />
+        <label htmlFor="frequency">発生頻度 *</label>
+        <select
+          id="frequency"
+          name="frequency"
+          value={frequency}
+          onChange={(e) => setFrequency(e.target.value)}
+          required
+          className={error?.frequency ? 'is-invalid' : ''} // クラス名を動的に設定
+          aria-describedby={error?.frequency ? "frequency-error" : undefined} // エラーメッセージと関連付け
+          aria-invalid={error?.frequency ? "true" : "false"} // エラー状態を示す
+        >
+          <option value="" disabled>選択してください</option>
+          <option value="always">必ず発生する</option>
+          <option value="sometimes">時々発生する</option>
+          <option value="once">一度だけ発生した</option>
+        </select>
+        {/* 発生頻度のエラーメッセージ */}
+        {error?.frequency && <p id="frequency-error" className="error-message">{error.frequency}</p>}
       </div>
 
+      {/* --- ★深刻度 (Select Box)★ --- */}
+      <div className="form-group">
+        <label htmlFor="severity">深刻度 *</label>
+        <select
+          id="severity"
+          name="severity"
+          value={severity}
+          onChange={(e) => setSeverity(e.target.value)}
+          required
+          className={error?.severity ? 'is-invalid' : ''} // クラス名を動的に設定
+          aria-describedby={error?.severity ? "severity-error" : undefined} // エラーメッセージと関連付け
+          aria-invalid={error?.severity ? "true" : "false"} // エラー状態を示す
+        >
+          <option value="" disabled>選択してください</option>
+          <option value="crash">ゲームがクラッシュする (致命的)</option>
+          <option value="blocking">進行不能になる</option>
+          <option value="minor">表示/動作がおかしい (軽微)</option>
+          <option value="suggestion">改善提案</option>
+        </select>
+        {/* 深刻度のエラーメッセージ */}
+        {error?.severity && <p id="severity-error" className="error-message">{error.severity}</p>}
+      </div>
+
+      {/* --- ★再現手順 (Textarea)★ --- */}
+      <div className="form-group">
+        <label htmlFor="steps">再現手順 *</label>
+        <textarea
+          id="steps"
+          name="steps"
+          rows="5"
+          required
+          value={steps}
+          onChange={(e) => setSteps(e.target.value)}
+          placeholder="例：〇〇のマップでジャンプしたら..."
+          className={error?.steps ? 'is-invalid' : ''} // クラス名を動的に設定
+          aria-describedby={error?.steps ? "steps-error" : undefined} // エラーメッセージと関連付け
+          aria-invalid={error?.steps ? "true" : "false"} // エラー状態を示す
+        />
+        {/* 再現手順のエラーメッセージ */}
+        {error?.steps && <p id="steps-error" className="error-message">{error.steps}</p>}
+      </div>
       {/* --- スクリーンショット入力 --- */}
       
       <div className="form-group">
@@ -262,36 +351,34 @@ export default function BugReportForm() {
         </div>
       </div>
 
-      {/* --- 不具合詳細入力 --- */}
+     <div className="form-group">
+        <label htmlFor="message-bug">補足情報 (任意)</label> {/* ラベルを変更 */}
+        <textarea id="message-bug" name="message" rows="5" value={message} onChange={(e) => setMessage(e.target.value)} /> {/* requiredを削除 */}
+      </div>
+
+       {/* --- ★ゲームバージョン (Input Text)★ --- */}
       <div className="form-group">
-        <label htmlFor="message-bug">不具合の詳細</label>
-        <textarea
-          id="message-bug"
-          name="message"
-          rows="8"
-          required
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          // ★ aria-describedbyを追加。エラーがある時だけ関連付ける ★
-          aria-describedby={error ? "form-error-message" : undefined}
-          // ★ エラーがある場合に、入力欄自体もエラー状態であることを示す (任意) ★
-          aria-invalid={error ? "true" : "false"}
+        <label htmlFor="gameVersion">ゲームバージョン (任意)</label>
+        <input
+          type="text"
+          id="gameVersion"
+          name="gameVersion" // Netlifyで認識される名前
+          value={gameVersion}
+          onChange={(e) => setGameVersion(e.target.value)}
+          placeholder="例: v1.0.1"
         />
       </div>
 
      {/* バリデーションエラーメッセージ */}
-      {error && (
-        <p
-          id="form-error-message" // ★ idを追加 ★
-          className="error-message"
-          style={{ color: 'red' }}
-          // ★ アクセシビリティ向上のため、エラー発生時にフォーカスを当てる役割も持たせる ★
+      {error?.form && (
+        <p 
+          id="form-error-message" // IDは残しても良い
+          className="error-message" 
           role="alert"
         >
-          {error}
+          {error.form}
         </p>
       )}
-
       {/* 送信ボタン */}
       <div className="form-group">
         <button type="submit" className="cta-button" disabled={submissionStatus === 'submitting'}>
