@@ -281,7 +281,7 @@ console.log("現在のエラーステート:", error);
           required
           value={steps}
           onChange={(e) => setSteps(e.target.value)}
-          placeholder="例：〇〇のマップでジャンプしたら..."
+          placeholder="例：電気の柵の前でハンマーを拾った時"
           className={error?.steps ? 'is-invalid' : ''} // クラス名を動的に設定
           aria-describedby={error?.steps ? "steps-error" : undefined} // エラーメッセージと関連付け
           aria-invalid={error?.steps ? "true" : "false"} // エラー状態を示す

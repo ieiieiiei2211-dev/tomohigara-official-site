@@ -1,6 +1,11 @@
 /* 基本設定 */
 body {
   background-color: #121212;
+  background-image: url('/main-visual.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: #e0e0e0;
   font-family: sans-serif;
   margin: 0;
@@ -26,10 +31,11 @@ body {
 .form-group input, .form-group textarea {
   width: 100%;
   padding: 12px 14px;
-  background-color: #2b2b2b;
-  border: 1px solid #474747;
+background-color: rgba(40, 60, 85, 0.35); /* 青みのある中間グレー透明 */
+border: 1px solid rgba(255, 255, 255, 0.12); /* 輪郭は控えめな白線 */
+
   border-radius: 8px;
-  color: #f0f0f0;
+  color: #e0e0e0;
   font-size: 1rem;
   box-sizing: border-box;
 }
@@ -66,12 +72,16 @@ footer {
 
 /* ボタンとペーストエリアを囲む枠線 */
 .screenshot-input-wrapper {
-  padding: 12px 14px; /* 内側の余白を他の入力欄と合わせる */
-  background-color: #2b2b2b; /* 背景色を他の入力欄と合わせる */
-  border: 1px solid #474747; /* 枠線を他の入力欄と合わせる */
-  border-radius: 8px; /* 角丸を他の入力欄と合わせる */
+  padding: 12px 14px;
+  background-color: rgba(235, 240, 255, 0.65);  /* 白寄りで透け感をかなり減らす */
+  border: 1px solid rgba(255, 255, 255, 0.35);  /* 枠線をやや強めて引き締める */
+  border-radius: 8px;
   box-sizing: border-box;
+  backdrop-filter: blur(4px);                   /* 軽くぼかし効果、透明感は維持 */
 }
+
+
+
 
 /* ファイル選択ボタンの微調整 (必要であれば) */
 .file-select-button {
@@ -141,10 +151,10 @@ footer {
 .form-group select {
   width: 100%;
   padding: 12px 14px;
-  background-color: #2b2b2b;
-  border: 1px solid #474747;
+  background-color: rgba(255, 255, 255, 0.08); /* 半透明の白に変更 */
+  border: 1px solid rgba(255, 255, 255, 0.2);  /* 枠線も半透明に */
   border-radius: 8px;
-  color: #f0f0f0;
+  color: #e0e0e0;
   font-size: 1rem;
   box-sizing: border-box;
   /* aparienciaを無効にしてカスタム矢印を追加することも可能 */
