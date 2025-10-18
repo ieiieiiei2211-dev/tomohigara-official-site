@@ -23,6 +23,7 @@ body {
   background: rgba(0,0,0,0.75);
   border: 1px solid #2f2f2f;
   border-radius: 12px;
+  position: relative; /* ★ GIF配置の基準にするため追加 ★ */
 }
 
 #contact h2 { font-size: 2.5rem; margin-bottom: 15px; }
@@ -201,4 +202,39 @@ footer {
 select:invalid,
 textarea:invalid {
   box-shadow: none;
+}
+/* ===============================================
+   ★ キャラクターGIFのスタイル (強制上書き版)
+   =============================================== */
+
+/* ★ 共通のスタイル（両方の画像に適用） */
+.character-move,
+.character-komari,
+.character-komari2 {
+  position: absolute !important;
+  pointer-events: none !important; 
+}
+
+/* ★ move.gif 用のスタイル */
+.character-move {
+  width: 350px !important; 
+  height: 350px !important;
+  right: 360px !important; /* フォームの右端からの位置 */
+  top: 433px !important; /* フォームの上からの位置 */
+}
+
+/* ★ komarigao.png 用のスタイル */
+.character-komari {
+  width: 120px !important;  /* サイズ */
+  height: 120px !important;
+  right: 460px !important; /* フォームの右端からの位置 */
+  top: 200px !important; /* フォームの上からの位置 */
+}
+
+/* ★ komarigao2.png 用のスタイル */
+.character-komari2 {
+  width: 100px !important;  /* 例: サイズ (適宜調整してください) */
+  height: 100px !important;
+  right: 468px !important; /* 例: 位置 (適宜調整してください) */
+  top: 310px !important; /* 例: 深刻度セクションの右横あたり */
 }

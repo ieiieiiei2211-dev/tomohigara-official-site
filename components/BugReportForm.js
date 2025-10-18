@@ -222,7 +222,7 @@ console.log("現在のエラーステート:", error);
 
   // --- 通常時・送信中・エラー時のフォーム表示 ---
   return (
-    <form name="game-bug-report" data-netlify="true" netlify-honeot="bot-field" onSubmit={handleSubmit} encType="multipart/form-data">
+    <form name="game-bug-report" data-netlify="true" netlify-honeypot="bot-field" onSubmit={handleSubmit} encType="multipart/form-data">
       {/* ... (隠しフィールド、名前入力) ... */}
 
       {/* --- ★発生頻度 (Select Box)★ --- */}
@@ -294,7 +294,7 @@ console.log("現在のエラーステート:", error);
       <div className="form-group">
         <label htmlFor="screenshot-button">スクリーンショット (任意)</label>
 
-        <p style={{ fontSize: '0.8rem', color: '#ffffff', marginTop: '-5px', marginBottom: '10px' }}>
+        <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '-5px', marginBottom: '10px' }}>
           最大10MBまでの画像ファイル (PNG, JPG, GIF) を添付できます。
         </p>
         
@@ -350,9 +350,13 @@ console.log("現在のエラーステート:", error);
           </div>
         </div>
       </div>
+      
 
-     <div className="form-group">
+     {/* ★★★ 補足情報のセクション ★★★ */}
+    <div className="form-group">
         <label htmlFor="message-bug">補足情報 (任意)</label> {/* ラベルを変更 */}
+        
+        {/* ★ 前回のラッパーやimgタグは削除し、textareaだけに戻します ★ */}
         <textarea id="message-bug" name="message" rows="5" value={message} onChange={(e) => setMessage(e.target.value)} /> {/* requiredを削除 */}
       </div>
 
@@ -385,6 +389,29 @@ console.log("現在のエラーステート:", error);
           {submissionStatus === 'submitting' ? '送信中...' : '報告を送信する'}
         </button>
       </div>
+      {/* ★★★ GIF画像をフォームの最後に追加 ★★★ */}
+      {/* (publicフォルダに move.gif を配置してください) */}
+
+      {/* move.gifを常に表示 */}
+      <img
+        src="/move.gif"
+        alt="decorative animation" 
+        className="character-move"
+      />
+
+      {/* 発生頻度が「必ず発生する」の場合にkomarigao.pngを表示 */}
+      {frequency === 'always' && (
+        <img src="/komarigao.png" alt="decorative animation" className="character-komari" />
+      )}
+
+      {/* 深刻度が「クラッシュする」の場合にkomarigao2.pngを表示 */}
+      {severity === 'crash' && (
+        <img
+          src="/komarigao2.png"
+          alt="decorative animation"
+          className="character-komari2"
+        />
+      )}
     </form>
   );
 }
