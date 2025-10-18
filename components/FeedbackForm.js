@@ -16,7 +16,9 @@ export default function FeedbackForm() {
   const [message, setMessage] = useState('');
   // ★★★フォームの送信状態を管理するStateを追加★★★
   const [submissionStatus, setSubmissionStatus] = useState('idle'); // 'idle', 'submitting', 'success', 'error'
-fasda
+  const [error, setError] = useState(''); // エラーメッセージを管理するState
+
+
   // 送信ボタンが押されたときの処理
   const handleSubmit = (event) => {
     event.preventDefault(); // ページのリロードを防ぐ
@@ -43,6 +45,12 @@ fasda
     .catch((error) => {
       setSubmissionStatus('error'); // 状態を「エラー」に更新
     });
+
+     if (message.trim() === '') {
+    setError('ご意見・ご感想を入力してください。'); // エラーメッセージをセット
+    return; // ここで処理を中断
+  }
+
   };
 
   // ★★★ 送信成功時の表示 ★★★
@@ -54,6 +62,7 @@ fasda
       </div>
     );
   }
+
 
   // ★★★ 通常時・送信中・エラー時のフォーム表示 ★★★
   return (

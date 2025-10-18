@@ -59,3 +59,80 @@ footer {
   padding: 24px 16px 40px;
   border-top: 1px solid #2f2f2f;
 }
+
+/* ===============================================
+   スクリーンショット入力エリアのスタイル
+   =============================================== */
+
+/* ボタンとペーストエリアを囲む枠線 */
+.screenshot-input-wrapper {
+  padding: 12px 14px; /* 内側の余白を他の入力欄と合わせる */
+  background-color: #2b2b2b; /* 背景色を他の入力欄と合わせる */
+  border: 1px solid #474747; /* 枠線を他の入力欄と合わせる */
+  border-radius: 8px; /* 角丸を他の入力欄と合わせる */
+  box-sizing: border-box;
+}
+
+/* ファイル選択ボタンの微調整 (必要であれば) */
+.file-select-button {
+  /* ここでボタンの色やサイズをさらに調整できます */
+  /* 例: background: #474747; */
+}
+
+/* ペーストエリアのスタイル */
+.paste-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 50px; /* 何もないときでも高さを確保 */
+  align-items: center; /* プレースホルダーテキストを中央に */
+}
+
+/* ペーストエリアのプレースホルダーテキスト */
+.paste-area-placeholder {
+  color: #aaa;
+  width: 100%;
+  margin: 0; /* pタグのデフォルトマージンをリセット */
+}
+
+/* 画像プレビューと削除ボタンのラッパー */
+.preview-item {
+  display: inline-block;
+  position: relative; /* 削除ボタンの位置調整用 */
+  margin: 5px;
+  vertical-align: top;
+}
+
+/* プレビュー画像のサイズ調整 */
+.pasted-image-preview {
+  display: block;
+  max-width: 100px; /* 小さく表示 */
+  max-height: 100px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+/* 削除ボタンの位置調整 */
+/* 削除ボタン (×印) のスタイル */
+.delete-preview-button {
+  position: absolute;
+  top: -5px; /* 位置を微調整 */
+  right: -5px; /* 位置を微調整 */
+  width: 20px; /* 小さな円にする */
+  height: 20px;
+  padding: 0;
+  font-size: 14px; /* ×のサイズ */
+  line-height: 18px; /* ×を中央に */
+  text-align: center;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.7); /* 半透明背景 */
+  border: none;
+  border-radius: 50%; /* 円形にする */
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: bold;
+}
+
+.delete-preview-button:hover {
+  background-color: rgba(255, 0, 0, 0.8); /* ホバー時に赤く */
+}

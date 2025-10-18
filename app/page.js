@@ -1,5 +1,5 @@
-// 作成したフォームコンポーネントを読み込みます
-import FeedbackForm from '../components/FeedbackForm';
+// FeedbackFormのimportも不要になるので削除
+// import FeedbackForm from '../components/FeedbackForm';
 
 export default function Home() {
   return (
@@ -7,20 +7,13 @@ export default function Home() {
       {/* ページのメインコンテンツ */}
       <main>
         {/* ...ここにヒーローセクションやゲーム紹介などを追加していく... */}
-        <h1>トモヒガラ公式サイト</h1>
+        <h1>トモヒガラ公式サイト (Next.js版)</h1>
+        <p>ここはNext.jsサイトのトップページです。</p>
+        <p><a href="/bug-report">バグ報告ページへ</a></p> {/* バグ報告ページへのリンクを設置 */}
       </main>
 
-      {/* お問い合わせセクション */}
-      <section id="contact">
-        <h2>CONTACT</h2>
-        <p>
-          このウェブサイトのデザインや機能に関するご意見・ご感想はこちらのフォームからお願いします。
-        </p>
-        
-        {/* ここで作成したフォーム部品を呼び出します */}
-        <FeedbackForm />
-      </section>
-この文字を追加
+      {/* お問い合わせセクションは削除 */}
+
       {/* フッター */}
       <footer>
         <p>© 2025 Tomohigara Studio</p>
