@@ -31,9 +31,8 @@ body {
 .form-group input, .form-group textarea {
   width: 100%;
   padding: 12px 14px;
-background-color: rgba(40, 60, 85, 0.35); /* 青みのある中間グレー透明 */
-border: 1px solid rgba(255, 255, 255, 0.12); /* 輪郭は控えめな白線 */
-
+  background-color: rgba(255, 255, 255, 0.08); /* 半透明の白に変更 */
+  border: 1px solid rgba(255, 255, 255, 0.2);  /* 枠線も半透明に */
   border-radius: 8px;
   color: #e0e0e0;
   font-size: 1rem;
@@ -73,11 +72,10 @@ footer {
 /* ボタンとペーストエリアを囲む枠線 */
 .screenshot-input-wrapper {
   padding: 12px 14px;
-  background-color: rgba(235, 240, 255, 0.65);  /* 白寄りで透け感をかなり減らす */
-  border: 1px solid rgba(255, 255, 255, 0.35);  /* 枠線をやや強めて引き締める */
+  background-color: rgba(255, 255, 255, 0.08); /* 半透明の白に変更 */
+  border: 1px solid rgba(255, 255, 255, 0.2);  /* 枠線も半透明に */
   border-radius: 8px;
   box-sizing: border-box;
-  backdrop-filter: blur(4px);                   /* 軽くぼかし効果、透明感は維持 */
 }
 
 
@@ -159,6 +157,12 @@ footer {
   box-sizing: border-box;
   /* aparienciaを無効にしてカスタム矢印を追加することも可能 */
   /* appearance: none; */
+}
+
+/* プルダウンメニューを開いた際の選択肢のスタイル */
+.form-group select option {
+  color: #121212; /* 文字色を黒に */
+  background-color: #ffffff; /* 背景色を白に (ブラウザによる) */
 }
 
 /* Select Boxのフォーカススタイル */
