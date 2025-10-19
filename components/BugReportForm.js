@@ -20,7 +20,12 @@ export default function BugReportForm() {
   const [frequency, setFrequency] = useState(''); // 発生頻度用
   const [severity, setSeverity] = useState('');   // 深刻度用
   const [steps, setSteps] = useState('');         // 再現手順用
+  const [expectedBehavior, setExpectedBehavior] = useState(''); // 期待した動作
   const [gameVersion, setGameVersion] = useState(''); // ゲームバージョン用 (任意)
+  const [contactInfo, setContactInfo] = useState(''); // 連絡先用
+  const [consent, setConsent] = useState(false);       // 同意チェックボックス用
+  const [operatingSystem, setOperatingSystem] = useState(''); // OS用
+  const [pcSpecs, setPcSpecs] = useState('');                 // PCスペック用
 
   // --- Ref定義 ---
   const fileInputRef = useRef(null); // 隠しファイル入力への参照
@@ -162,8 +167,13 @@ export default function BugReportForm() {
       formData.append('frequency', frequency);
       formData.append('severity', severity);
       formData.append('steps', steps);
+      formData.append('expectedBehavior', expectedBehavior); // 期待した動作
       formData.append('message', message); // 補足情報
       formData.append('gameVersion', gameVersion);
+      formData.append('os', operatingSystem);
+      formData.append('pcSpecs', pcSpecs);
+      formData.append('contactInfo', contactInfo); // 連絡先
+      formData.append('consent', consent);       // 同意チェック (true/falseが文字列として送られます)
 
       if (screenshots.length > 0) {
         screenshots.forEach(({ file }) => {
@@ -184,6 +194,15 @@ export default function BugReportForm() {
           setName('');
           setMessage('');
           clearScreenshots();
+          setFrequency('');
+          setSeverity('');
+          setSteps('');
+          setExpectedBehavior('');
+          setGameVersion('');
+          setOperatingSystem('');
+          setPcSpecs('');
+          setContactInfo('');
+          setConsent(false);
         })
         .catch((fetchError) => { // ★ ネットワークエラー、または上記で投げたエラーの両方を捕捉 ★
           setSubmissionStatus('error');
@@ -222,10 +241,15 @@ console.log("現在のエラーステート:", error);
 
   // --- 通常時・送信中・エラー時のフォーム表示 ---
   return (
-    <form name="game-bug-report" data-netlify="true" netlify-honeypot="bot-field" onSubmit={handleSubmit} encType="multipart/form-data">
+    <form name="game-bug-report"
+    data-netlify="true"
+    netlify-honeypot="bot-field"
+    onSubmit={handleSubmit}
+    encType="multipart/form-data"
+    data-netlify-recaptcha="true"
+    >
       {/* ... (隠しフィールド、名前入力) ... */}
 
-      {/* --- ★発生頻度 (Select Box)★ --- */}
       {/* --- ★発生頻度 (Select Box)★ --- */}
       <div className="form-group">
         <label htmlFor="frequency">発生頻度 *</label>
@@ -289,13 +313,40 @@ console.log("現在のエラーステート:", error);
         {/* 再現手順のエラーメッセージ */}
         {error?.steps && <p id="steps-error" className="error-message">{error.steps}</p>}
       </div>
-      {/* --- スクリーンショット入力 --- */}
-      
+      {/* --- ★期待した動作 (Textarea)★ --- */}
+      <div className="form-group">
+        <label htmlFor="expectedBehavior">期待した動作 (任意)</label>
+        <textarea
+          id="expectedBehavior"
+          name="expectedBehavior" // Netlifyで認識される名前
+          rows="3" // 再現手順より少し短くても良いでしょう
+          value={expectedBehavior}
+          onChange={(e) => setExpectedBehavior(e.target.value)}
+          placeholder="例: ハンマーがアイテム欄に追加される"
+          // ★ placeholderの色を薄くするために globals.css を変更済みと仮定
+        />
+      </div>
+      {/* --- スクリーンショット入力 --- */}  
       <div className="form-group">
         <label htmlFor="screenshot-button">スクリーンショット (任意)</label>
-
+        
         <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '-5px', marginBottom: '10px' }}>
           最大10MBまでの画像ファイル (PNG, JPG, GIF) を添付できます。
+          <br />
+          <strong style={{ color: '#e0e0e0' }}>
+            もし動画を提供いただける場合は、お手数ですが
+            {/* ここがリンクです */}
+            <a 
+              href="mailto:lv1norasubosutomohigara@gmail.com"
+              style={{ 
+                color: '#60a5fa', /* 明るい青色 */
+                textDecoration: 'underline' /* 下線 */
+              }}
+            >
+              lv1norasubosutomohigara@gmail.com
+            </a> 
+            まで直接お送りください。
+          </strong>
         </p>
         
         <div className="screenshot-input-wrapper">
@@ -372,6 +423,75 @@ console.log("現在のエラーステート:", error);
           placeholder="例: v1.0.1"
         />
       </div>
+      <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '-5px' }}>ゲームのタイトル画面の右下などに表示されています (例: v1.0.1)</p>
+      {/* --- ★OS (Input Text)★ --- */}
+      <div className="form-group">
+        <label htmlFor="os">OS (任意)</label>
+        <input
+          type="text"
+          id="os"
+          name="os" // Netlifyで認識される名前
+          value={operatingSystem}
+          onChange={(e) => setOperatingSystem(e.target.value)}
+          placeholder="例: Windows 11 Home"
+        />
+      </div>
+
+      {/* --- ★PCスペック (Textarea)★ --- */}
+      <div className="form-group">
+        <label htmlFor="pcSpecs">PCスペック (任意)</label>
+        <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '-5px', marginBottom: '10px' }}>
+          可能であれば、CPU・GPU (グラフィックボード)・RAM (メモリ) をご記入ください。
+          <br />
+          (Windows: 「DxDiag」コマンド, Mac: 「このMacについて」で確認できます)
+        </p>
+        <textarea
+          id="pcSpecs"
+          name="pcSpecs" // Netlifyで認識される名前
+          rows="4"
+          value={pcSpecs}
+          onChange={(e) => setPcSpecs(e.target.value)}
+          placeholder={
+`例:
+CPU: Intel Core i7-12700
+GPU: NVIDIA GeForce RTX 3070
+RAM: 32GB`
+          }
+        />
+      </div>
+
+      {/* --- ★↓ ここから追加 ↓★ --- */}
+      {/* --- ★連絡先 (Input Text)★ --- */}
+      <div className="form-group">
+        <label htmlFor="contactInfo">連絡先 (任意)</label>
+        <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '-5px', marginBottom: '10px' }}>
+          バグの詳細について開発者から連絡する場合があります。
+        </p>
+        <input
+          type="text"
+          id="contactInfo"
+          name="contactInfo" // Netlifyで認識される名前
+          value={contactInfo}
+          onChange={(e) => setContactInfo(e.target.value)}
+          placeholder="例: user@example.com または X ID: @username"
+        />
+      </div>
+
+      {/* --- ★同意チェックボックス★ --- */}
+      <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        <input
+          type="checkbox"
+          id="consent"
+          name="consent" // Netlifyで認識される名前
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          style={{ width: 'auto', height: 'auto', margin: 0 }} // スタイルを調整
+        />
+        {/* チェックボックスの隣に配置し、マージンをリセット */}
+        <label htmlFor="consent" style={{ marginBottom: 0, fontWeight: 'normal' }}>
+          上記連絡先に開発者が連絡することに同意します。
+        </label>
+      </div>
 
      {/* バリデーションエラーメッセージ */}
       {error?.form && (
@@ -383,6 +503,9 @@ console.log("現在のエラーステート:", error);
           {error.form}
         </p>
       )}
+      {/* Netlifyがここに「私はロボットではありません」の
+          チェックボックスを自動的に挿入します */}
+      <div data-netlify-recaptcha="true"></div>
       {/* 送信ボタン */}
       <div className="form-group">
         <button type="submit" className="cta-button" disabled={submissionStatus === 'submitting'}>

@@ -238,3 +238,9 @@ textarea:invalid {
   right: 468px !important; /* 例: 位置 (適宜調整してください) */
   top: 310px !important; /* 例: 深刻度セクションの右横あたり */
 }
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #aaa; /* ★ '#ffffff' から '#aaa' (薄いグレー) に変更 ★ */
+  opacity: 1; /* Firefoxのデフォルト透明度を上書き */
+}
