@@ -10,7 +10,7 @@ const encode = (data) => {
     .join("&");
 }
 
-export default function BugReportForm() {
+export default function BugReportForm({ dict, lang}) {
     // --- State定義 ---
     const [name, setName] = useState('');
     const [message, setMessage] = useState('');
@@ -252,109 +252,107 @@ export default function BugReportForm() {
 
         
   // --- 送信成功時の表示 ---
-    if (submissionStatus === 'success') {
-        return (
-            <div className="submission-success" style={{ textAlign: 'center' }}>
-                <h3>ご報告ありがとうございます！</h3>
-                <p>不具合報告が正常に送信されました。ご協力に感謝いたします。</p>
-                <button
-                    type="button"
-                    // ★ クリックされたらフォームの状態を 'idle' (初期状態) に戻す ★
-                    onClick={() => setSubmissionStatus('idle')}
-                    className="cta-button" // 既存のボタンスタイルを流用
-                    style={{ width: 'auto', marginTop: '20px' }} // 幅自動調整、上に余白
-                >
-                    さらに報告する
-                </button>
-            </div>
-        );
-    }
+if (submissionStatus === 'success') {
+    return (
+      <div className="submission-success" style={{ textAlign: 'center' }}>
+        {/* ★ 辞書からテキストを読み込む */}
+        <h3>{dict.submit_success_title}</h3>
+        <p>{dict.submit_success_message}</p>
+        <button
+          type="button"
+          onClick={() => setSubmissionStatus('idle')}
+          className="cta-button" 
+          style={{width:'auto', marginTop:'20px'}}
+        >
+          {/* ★ このテキストも辞書から読み込む (要追加) */}
+          さらに報告する 
+        </button>
+      </div>
+    );
+  }
 
   // --- 通常時・送信中・エラー時のフォーム表示 ---
     return (
        <form name="game-bug-report" data-netlify="true" netlify-honeypot="bot-field" onSubmit={handleSubmit} encType="multipart/form-data">
             {/* 隠しフィールド */}
-            <input type="hidden" name="form-name" value="game-bug-report" />
+           <input type="hidden" name="language" value={lang} />
+      
+      {/* ... (他の隠しフィールド) ... */}
+      
+      {/* --- ★発生頻度 (Select Box)★ --- */}
+      <div className="form-group">
+        {/* ★ 辞書から読み込む */}
+        <label htmlFor="frequency">{dict.frequency_label}</label>
+        <select
+          id="frequency"
+          name="frequency"
+          value={frequency}
+          onChange={(e) => setFrequency(e.target.value)}
+          required
+          className={error?.frequency ? 'is-invalid' : ''}
+          aria-invalid={error?.frequency ? "true" : "false"}
+        >
+          {/* ★ 辞書から読み込む */}
+          <option value="" disabled>{dict.frequency_placeholder}</option>
+          <option value="always">{dict.frequency_always}</option>
+          <option value="sometimes">{dict.frequency_sometimes}</option>
+          <option value="once">{dict.frequency_once}</option>
+        </select>
+        {error?.frequency && <p id="frequency-error" className="error-message">{error.frequency}</p>}
+      </div>
 
-            {/* --- ★名前 (Input Text)★ --- */}
-            {/* ... (隠しフィールド、名前入力) ... */}
+      {/* --- ★深刻度 (Select Box)★ --- */}
+      <div className="form-group">
+        {/* ★ 辞書から読み込む */}
+        <label htmlFor="severity">{dict.severity_label}</label>
+        <select
+          id="severity"
+          name="severity"
+          value={severity}
+          onChange={(e) => setSeverity(e.target.value)}
+          required
+          className={error?.severity ? 'is-invalid' : ''}
+          aria-invalid={error?.severity ? "true" : "false"}
+        >
+          {/* ★ 辞書から読み込む */}
+          <option value="" disabled>{dict.severity_placeholder}</option>
+          <option value="crash">{dict.severity_crash}</option>
+          <option value="blocking">{dict.severity_blocking}</option>
+          <option value="minor">{dict.severity_minor}</option>
+          <option value="suggestion">{dict.severity_suggestion}</option>
+        </select>
+        {error?.severity && <p id="severity-error" className="error-message">{error.severity}</p>}
+      </div>
 
-            {/* --- ★発生頻度 (Select Box)★ --- */}
-            <div className="form-group">
-                <label htmlFor="frequency">発生頻度 *</label>
-                <select
-                    id="frequency"
-                    name="frequency"
-                    value={frequency}
-                    onChange={(e) => setFrequency(e.target.value)}
-                    required
-                    className={error?.frequency ? 'is-invalid' : ''} // クラス名を動的に設定
-                    aria-describedby={error?.frequency ? "frequency-error" : undefined} // エラーメッセージと関連付け
-                    aria-invalid={error?.frequency ? "true" : "false"} // エラー状態を示す
-                >
-                    <option value="" disabled>選択してください</option>
-                    <option value="always">必ず発生する</option>
-                    <option value="sometimes">時々発生する</option>
-                    <option value="once">一度だけ発生した</option>
-                </select>
-                {/* 発生頻度のエラーメッセージ */}
-                {error?.frequency && <p id="frequency-error" className="error-message">{error.frequency}</p>}
-            </div>
+      {/* --- ★再現手順 (Textarea)★ --- */}
+      <div className="form-group">
+        <label htmlFor="steps">{dict.steps_label}</label>
+        <textarea
+          id="steps"
+          name="steps"
+          rows="5"
+          required
+          value={steps}
+          onChange={(e) => setSteps(e.target.value)}
+          placeholder={dict.steps_placeholder} // ★ 辞書から
+          className={error?.steps ? 'is-invalid' : ''}
+          aria-invalid={error?.steps ? "true" : "false"}
+        />
+        {error?.steps && <p id="steps-error" className="error-message">{error.steps}</p>}
+      </div>
 
-            {/* --- ★深刻度 (Select Box)★ --- */}
-            <div className="form-group">
-                <label htmlFor="severity">深刻度 *</label>
-                <select
-                    id="severity"
-                    name="severity"
-                    value={severity}
-                    onChange={(e) => setSeverity(e.target.value)}
-                    required
-                    className={error?.severity ? 'is-invalid' : ''} // クラス名を動的に設定
-                    aria-describedby={error?.severity ? "severity-error" : undefined} // エラーメッセージと関連付け
-                    aria-invalid={error?.severity ? "true" : "false"} // エラー状態を示す
-                >
-                    <option value="" disabled>選択してください</option>
-                    <option value="crash">ゲームがクラッシュする (致命的)</option>
-                    <option value="blocking">進行不能になる</option>
-                    <option value="minor">表示/動作がおかしい (軽微)</option>
-                    <option value="suggestion">改善提案</option>
-                </select>
-                {/* 深刻度のエラーメッセージ */}
-                {error?.severity && <p id="severity-error" className="error-message">{error.severity}</p>}
-            </div>
-
-            {/* --- ★再現手順 (Textarea)★ --- */}
-            <div className="form-group">
-                <label htmlFor="steps">再現手順 *</label>
-                <textarea
-                    id="steps"
-                    name="steps"
-                    rows="5"
-                    required
-                    value={steps}
-                    onChange={(e) => setSteps(e.target.value)}
-                    placeholder="例：電気の柵の前でハンマーを拾った時"
-                    className={error?.steps ? 'is-invalid' : ''} // クラス名を動的に設定
-                    aria-describedby={error?.steps ? "steps-error" : undefined} // エラーメッセージと関連付け
-                    aria-invalid={error?.steps ? "true" : "false"} // エラー状態を示す
-                />
-                {/* 再現手順のエラーメッセージ */}
-                {error?.steps && <p id="steps-error" className="error-message">{error.steps}</p>}
-            </div>
-            {/* --- ★期待した動作 (Textarea)★ --- */}
-            <div className="form-group">
-                <label htmlFor="expectedBehavior">期待した動作 (任意)</label>
-                <textarea
-                    id="expectedBehavior"
-                    name="expectedBehavior" // Netlifyで認識される名前
-                    rows="3" // 再現手順より少し短くても良いでしょう
-                    value={expectedBehavior}
-                    onChange={(e) => setExpectedBehavior(e.target.value)}
-                    placeholder="例: ハンマーがアイテム欄に追加される"
-                // ★ placeholderの色を薄くするために globals.css を変更済みと仮定
-                />
-            </div>
+      {/* --- ★期待した動作 (Textarea)★ --- */}
+      <div className="form-group">
+        <label htmlFor="expectedBehavior">{dict.expected_label}</label>
+        <textarea
+          id="expectedBehavior"
+          name="expectedBehavior"
+          rows="3"
+          value={expectedBehavior}
+          onChange={(e) => setExpectedBehavior(e.target.value)}
+          placeholder={dict.expected_placeholder} // ★ 辞書から
+        />
+      </div>
             {/* --- スクリーンショット入力 --- */}
             <div className="form-group">
                 <label htmlFor="screenshot-button">スクリーンショット (任意)</label>
@@ -546,10 +544,10 @@ RAM: 32GB`
             
             {/* 送信ボタン */}
             <div className="form-group">
-                <button type="submit" className="cta-button" disabled={submissionStatus === 'submitting'}>
-                    {submissionStatus === 'submitting' ? '送信中...' : '報告を送信する'}
-                </button>
-            </div>
+        <button type="submit" className="cta-button" disabled={submissionStatus === 'submitting'}>
+          {submissionStatus === 'submitting' ? dict.submitting_button : dict.submit_button}
+        </button>
+      </div>
             {/* ★★★ GIF画像をフォームの最後に追加 ★★★ */}
             {/* (publicフォルダに move.gif を配置してください) */}
 

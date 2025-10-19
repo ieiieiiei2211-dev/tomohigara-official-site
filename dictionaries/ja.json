@@ -1,0 +1,23 @@
+{
+  "form_title": "不具合報告フォーム",
+  "frequency_label": "発生頻度 *",
+  "frequency_placeholder": "選択してください",
+  "frequency_always": "必ず発生する",
+  "frequency_sometimes": "時々発生する",
+  "frequency_once": "一度だけ発生した",
+  "severity_label": "深刻度 *",
+  "severity_placeholder": "選択してください",
+  "severity_crash": "ゲームがクラッシュする (致命的)",
+  "severity_blocking": "進行不能になる",
+  "severity_minor": "表示/動作がおかしい (軽微)",
+  "severity_suggestion": "改善提案",
+  "steps_label": "再現手順 *",
+  "steps_placeholder": "例：電気の柵の前でハンマーを拾った時",
+  "expected_label": "期待した動作 (任意)",
+  "expected_placeholder": "例: ハンマーがアイテム欄に追加される",
+  "submit_button": "報告を送信する",
+  "submitting_button": "送信中...",
+  "submit_success_title": "ご報告ありがとうございます！",
+  "submit_success_message": "不具合報告が正常に送信されました。ご協力に感謝いたします。"
+  // ...
+}

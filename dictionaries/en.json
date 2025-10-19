@@ -1,0 +1,23 @@
+{
+  "form_title": "Bug Report Form",
+  "frequency_label": "Frequency *",
+  "frequency_placeholder": "Select frequency",
+  "frequency_always": "Always",
+  "frequency_sometimes": "Sometimes",
+  "frequency_once": "Only once",
+  "severity_label": "Severity *",
+  "severity_placeholder": "Select severity",
+  "severity_crash": "Game crashes (Critical)",
+  "severity_blocking": "Cannot progress",
+  "severity_minor": "Visual / Minor bug",
+  "severity_suggestion": "Suggestion",
+  "steps_label": "Steps to Reproduce *",
+  "steps_placeholder": "Example: When I picked up the hammer near the electric fence",
+  "expected_label": "Expected Behavior (Optional)",
+  "expected_placeholder": "Example: The hammer is added to my inventory",
+  "submit_button": "Submit Report",
+  "submitting_button": "Submitting...",
+  "submit_success_title": "Thank you!",
+  "submit_success_message": "Your bug report has been submitted successfully."
+  // ... 他のすべてのラベル、プレースホルダー、エラーメッセージを英語化
+}
