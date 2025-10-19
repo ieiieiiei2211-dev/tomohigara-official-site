@@ -16,7 +16,7 @@ export default function BugReportForm() {
     const [message, setMessage] = useState('');
     // { file: File, previewUrl: string } の配列としてスクリーンショットを管理
     const [screenshots, setScreenshots] = useState([]);
-    const [submissionStatus, setSubmissionStatus] = useState('idle');
+    const [submissionStatus, setSubmissionStatus] = useState('submitting');
     const [error, setError] = useState({}); // ★ nullではなく空オブジェクトを初期値にします
     const [frequency, setFrequency] = useState(''); // 発生頻度用
     const [severity, setSeverity] = useState('');   // 深刻度用
@@ -27,6 +27,8 @@ export default function BugReportForm() {
     const [consent, setConsent] = useState(false);       // 同意チェックボックス用
     const [operatingSystem, setOperatingSystem] = useState(''); // OS用
     const [pcSpecs, setPcSpecs] = useState('');                 // PCスペック用
+    const [gameLog, setGameLog] = useState('');                 // ゲームログ用
+
 
   // --- Ref定義 ---
   const fileInputRef = useRef(null); // 隠しファイル入力への参照
@@ -188,48 +190,67 @@ export default function BugReportForm() {
                     formData.append('screenshot', file);
                 });
             }
+            
 
-            fetch("/", { method: "POST", body: formData })
-                .then(response => { // ★ responseオブジェクトを受け取ります ★
-                    // ★ Netlifyがエラーを返した場合 (例: フォームが見つからない等) をチェック ★
-                    if (!response.ok) {
-                        // fetch自体は成功したが、HTTPステータスがエラー (4xx or 5xx)
-                        // エラー情報を付加して、意図的にエラーを発生させます
-                        throw new Error(`サーバーエラー: ${response.status} ${response.statusText}`);
-                    }
-                    // ★ HTTPステータスが成功 (2xx) の場合 ★
-                    setSubmissionStatus('success');
-                    setName('');
-                    setMessage('');
-                    clearScreenshots();
-                    setFrequency('');
-                    setSeverity('');
-                    setSteps('');
-                    setExpectedBehavior('');
-                    setGameVersion('');
-                    setOperatingSystem('');
-                    setPcSpecs('');
-                    setContactInfo('');
-                    setConsent(false);
-                    setRecaptchaToken(null);
-                    recaptchaRef.current?.reset();
-                })
-                .catch((fetchError) => { // ★ ネットワークエラー、または上記で投げたエラーの両方を捕捉 ★
-                    setSubmissionStatus('error');
-                    console.error("フォーム送信エラー:", fetchError); // デバッグ用にコンソールにエラー出力
+            // 1. 実際の送信処理 (Promise)
+      const fetchPromise = fetch("/", { method: "POST", body: formData })
+        .then(response => {
+          if (!response.ok) {
+            // Netlifyサーバーがエラーを返した場合
+            throw new Error(`サーバーエラー: ${response.status} ${response.statusText}`);
+          }
+          // 成功レスポンスを次に渡す (ここではまだ state を変更しない)
+          return response; 
+        });
 
-                    // ★ エラーメッセージを少し具体的に分岐 ★
-                    if (fetchError.message.startsWith('サーバーエラー')) {
-                        // 上記で throw したエラーの場合
-                        setError({ form: 'サーバー側で問題が発生しました。時間をおいて再試行してください。' });
-                    } else {
-                        // fetch自体が失敗した場合（ネットワーク接続の問題など）
-                        setError({ form: '送信に失敗しました。ネットワーク接続を確認してください。' });
-                    }
-                });
-        }
-    };
-    console.log("現在のエラーステート:", error);
+      // 2. 最低でも1.5秒間待つためのタイマー (1500ミリ秒)
+      const minimumDisplayTimePromise = new Promise(resolve => {
+        setTimeout(resolve, 500); 
+      });
+
+      // 3. 「送信処理」と「1.5秒タイマー」の両方が完了するのを待つ
+      Promise.all([fetchPromise, minimumDisplayTimePromise])
+        .then(([fetchResponse]) => {
+          // ★ 両方完了したら（送信成功＆1.5秒経過）、成功画面に切り替える
+          setSubmissionStatus('success');
+          
+          // ★ 成功時のリセット処理 (リセット項目をすべてここに集約)
+          setName('');
+          setMessage('');
+          clearScreenshots();
+          setFrequency('');
+          setSeverity('');
+          setSteps('');
+          setExpectedBehavior('');
+          setGameVersion('');
+          setOperatingSystem('');
+          setPcSpecs('');
+          setGameLog('');
+          setContactInfo('');
+          setConsent(false);
+          setRecaptchaToken(null);
+          recaptchaRef.current?.reset();
+        })
+        .catch((fetchError) => { 
+          // ★ ネットワークエラー、またはサーバーエラーのどちらかが発生した場合
+          setSubmissionStatus('error');
+          console.error("フォーム送信エラー:", fetchError); 
+
+          if (fetchError.message.startsWith('サーバーエラー')) {
+            setError({ form: 'サーバー側で問題が発生しました。時間をおいて再試行してください。' });
+          } else {
+            // fetch自体が失敗した場合（ネットワーク接続の問題など）
+            setError({ form: '送信に失敗しました。ネットワーク接続を確認してください。' });
+          }
+
+          // エラー時も reCAPTCHA はリセット
+          setRecaptchaToken(null);
+          recaptchaRef.current?.reset();
+        });
+        } // elseブロックの閉じ括弧
+    }
+
+        
   // --- 送信成功時の表示 ---
     if (submissionStatus === 'success') {
         return (
@@ -481,7 +502,7 @@ RAM: 32GB`
                     name="contactInfo" // Netlifyで認識される名前
                     value={contactInfo}
                     onChange={(e) => setContactInfo(e.target.value)}
-                    placeholder="例: user@example.com または X ID: @username"
+                    placeholder="例: user@example.com または Twitter ID: @username"
                 />
             </div>
 
@@ -552,6 +573,13 @@ RAM: 32GB`
                     className="character-komari2"
                 />
             )}
+           {submissionStatus === 'submitting' && (
+        <img
+          src="/transmission-unscreen.gif" /* ★ 新しいファイル名 */
+          alt="Submitting..."
+          className="character-transmission" /* ★ CSSクラスで制御 */
+        />
+      )}
         </form>
     );
 }

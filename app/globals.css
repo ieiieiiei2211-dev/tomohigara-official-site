@@ -182,6 +182,11 @@ footer {
   box-shadow: 0 0 0 3px rgba(59,130,246,.25);
 }
 
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #aaa; /* ★ '#ffffff' から '#aaa' (薄いグレー) に変更 ★ */
+  opacity: 1; /* Firefoxのデフォルト透明度を上書き */
+}
 /* ===============================================
    バリデーションエラー時のスタイル
    =============================================== */
@@ -210,7 +215,8 @@ textarea:invalid {
 /* ★ 共通のスタイル（両方の画像に適用） */
 .character-move,
 .character-komari,
-.character-komari2 {
+.character-komari2,
+.character-transmission{
   position: absolute !important;
   pointer-events: none !important; 
 }
@@ -239,8 +245,13 @@ textarea:invalid {
   top: 310px !important; /* 例: 深刻度セクションの右横あたり */
 }
 
-.form-group input::placeholder,
-.form-group textarea::placeholder {
-  color: #aaa; /* ★ '#ffffff' から '#aaa' (薄いグレー) に変更 ★ */
-  opacity: 1; /* Firefoxのデフォルト透明度を上書き */
+
+/* ★ transmission-unscreen.gif 用のスタイル (送信中) */
+.character-transmission {
+  width: 700px !important;  /* (サイズは適宜調整してください) */
+  height: 700px !important;
+  left: 50% !important; /* ★ フォームに対して水平中央に */
+  transform: translateX(-50%) !important; /* ★ 水平中央のためのおまじない */
+  top: 1650px !important; /* ★ フォームの上から350px (適宜調整してください) */
+  z-index: 10 !important; /* ★ 他の要素より手前に表示 */
 }
