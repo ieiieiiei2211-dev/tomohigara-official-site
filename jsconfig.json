@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".", // ★ この行が必須です！
     "paths": {
       "@/*": ["./*"]
     }

@@ -19,5 +19,4 @@
   "submitting_button": "Submitting...",
   "submit_success_title": "Thank you!",
   "submit_success_message": "Your bug report has been submitted successfully."
-  // ... 他のすべてのラベル、プレースホルダー、エラーメッセージを英語化
 }
