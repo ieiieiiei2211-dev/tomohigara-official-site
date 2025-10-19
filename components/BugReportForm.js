@@ -14,36 +14,32 @@ export default function BugReportForm({ dict, lang}) {
     // --- State定義 ---
     const [name, setName] = useState('');
     const [message, setMessage] = useState('');
-    // { file: File, previewUrl: string } の配列としてスクリーンショットを管理
     const [screenshots, setScreenshots] = useState([]);
-    const [submissionStatus, setSubmissionStatus] = useState('submitting');
-    const [error, setError] = useState({}); // ★ nullではなく空オブジェクトを初期値にします
-    const [frequency, setFrequency] = useState(''); // 発生頻度用
-    const [severity, setSeverity] = useState('');   // 深刻度用
-    const [steps, setSteps] = useState('');         // 再現手順用
-    const [expectedBehavior, setExpectedBehavior] = useState(''); // 期待した動作
-    const [gameVersion, setGameVersion] = useState(''); // ゲームバージョン用 (任意)
-    const [contactInfo, setContactInfo] = useState(''); // 連絡先用
-    const [consent, setConsent] = useState(false);       // 同意チェックボックス用
-    const [operatingSystem, setOperatingSystem] = useState(''); // OS用
-    const [pcSpecs, setPcSpecs] = useState('');                 // PCスペック用
-    const [gameLog, setGameLog] = useState('');                 // ゲームログ用
-
+    const [submissionStatus, setSubmissionStatus] = useState('idle'); // ★ 'submitting' から 'idle' に戻しました
+    const [error, setError] = useState({}); 
+    const [frequency, setFrequency] = useState(''); 
+    const [severity, setSeverity] = useState('');   
+    const [steps, setSteps] = useState('');         
+    const [expectedBehavior, setExpectedBehavior] = useState(''); 
+    const [gameVersion, setGameVersion] = useState(''); 
+    const [contactInfo, setContactInfo] = useState(''); 
+    const [consent, setConsent] = useState(false);       
+    const [operatingSystem, setOperatingSystem] = useState(''); 
+    const [pcSpecs, setPcSpecs] = useState('');                 
+    const [gameLog, setGameLog] = useState('');                 
 
   // --- Ref定義 ---
-  const fileInputRef = useRef(null); // 隠しファイル入力への参照
+  const fileInputRef = useRef(null); 
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const recaptchaRef = useRef(null);
 
   // --- スクリーンショット関連の関数 ---
-
-  // 選択またはペーストされたファイル（複数可）を処理する
     const handleFiles = (files) => {
         const rawFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
         if (rawFiles.length === 0) return;
 
-        const validFiles = []; // サイズ制限をクリアしたファイルを入れる配列
-        let sizeError = false; // サイズオーバーのファイルがあったかどうかのフラグ
+        const validFiles = []; 
+        let sizeError = false; 
 
         rawFiles.forEach(file => {
             if (file.size > MAX_FILE_SIZE) {
@@ -55,18 +51,17 @@ export default function BugReportForm({ dict, lang}) {
 
         // 合計枚数チェック
         if (screenshots.length + validFiles.length > 10) {
-            // ★ 既存のエラーを保持しつつ、ファイルエラーを追加/上書き ★
-            setError(prev => ({ ...prev, file: '画像は最大10枚まで添付できます。' }));
+            setError(prev => ({ ...prev, file: dict.error_file_limit })); // ★ 辞書
             if (fileInputRef.current) { fileInputRef.current.value = ''; }
             return;
         }
 
         // ファイルサイズチェック
         if (sizeError) {
-            // ★ 既存のエラーを保持しつつ、ファイルエラーを追加/上書き ★
-            setError(prev => ({ ...prev, file: `ファイルサイズは10MBまでです。${validFiles.length > 0 ? '制限内のファイルのみ追加しました。' : ''}` }));
+            // ★ 辞書 (エラーメッセージを結合)
+            const fileSizeError = `${dict.error_file_size} ${validFiles.length > 0 ? dict.error_file_size_partial : ''}`;
+            setError(prev => ({ ...prev, file: fileSizeError }));
         } else {
-            // ★ ファイル関連のエラーが解消された場合、fileキーのみを削除 ★
             setError(prev => {
                 const { file, ...rest } = prev;
                 return rest;
@@ -78,7 +73,6 @@ export default function BugReportForm({ dict, lang}) {
             return;
         }
 
-        // FileReaderを使ってプレビューURLを生成 (非同期処理)
         const newScreenshotPromises = validFiles.map(file => {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -86,19 +80,17 @@ export default function BugReportForm({ dict, lang}) {
                     console.error("FileReader error");
                     resolve(null);
                 };
-                reader.onload = (e) => resolve({ file, previewUrl: e.target.result }); // Data URLとしてプレビューを生成
+                reader.onload = (e) => resolve({ file, previewUrl: e.target.result });
                 reader.readAsDataURL(file);
             });
         });
 
-        // 全てのプレビューURLが生成されたらStateを更新 (エラーでnullが返ってきた場合は除外)
         Promise.all(newScreenshotPromises).then(newScreenshots => {
-            const validScreenshots = newScreenshots.filter(s => s !== null); // nullを除外
+            const validScreenshots = newScreenshots.filter(s => s !== null);
             setScreenshots(prev => [...prev, ...validScreenshots]);
         });
     };
 
-  // 特定のインデックスの画像を削除
     const handleDeleteScreenshot = (indexToDelete) => {
         const screenshotToDelete = screenshots[indexToDelete];
         if (screenshotToDelete?.previewUrl.startsWith('blob:')) {
@@ -107,29 +99,23 @@ export default function BugReportForm({ dict, lang}) {
         setScreenshots(prev => prev.filter((_, index) => index !== indexToDelete));
     };
 
-  // すべてのスクリーンショットをクリア
     const clearScreenshots = () => {
         screenshots.forEach(s => {
-            // createObjectURLで生成されたURLのみを解放
             if (s.previewUrl?.startsWith('blob:')) {
                 URL.revokeObjectURL(s.previewUrl)
             }
         });
         setScreenshots([]);
         if (fileInputRef.current) {
-            fileInputRef.current.value = ''; // ファイル入力をクリア
+            fileInputRef.current.value = '';
         }
     };
 
-  // --- useEffect フック (ペースト処理とクリーンアップ) ---
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         const handlePaste = (event) => {
             handleFiles(event.clipboardData.files);
         };
         document.addEventListener('paste', handlePaste);
-
-        // クリーンアップ関数
         return () => {
             document.removeEventListener('paste', handlePaste);
             screenshots.forEach(s => {
@@ -138,34 +124,32 @@ export default function BugReportForm({ dict, lang}) {
                 }
             });
         };
-    }, [screenshots]); // screenshotsが更新されるたびにイベントリスナーを再設定
+    }, [screenshots, dict]); // ★ dict を依存配列に追加
 
   // --- 送信処理 ---
     const handleSubmit = (event) => {
         console.log("handleSubmitが実行されました！");
         event.preventDefault();
         if (!recaptchaToken) {
-      setError(prev => ({ ...prev, form: '「私はロボットではありません」にチェックを入れてください。' }));
-      return;
-    }
-        const errors = {}; // エラーを保持するオブジェクト
+          setError(prev => ({ ...prev, form: dict.error_recaptcha })); // ★ 辞書
+          return;
+        }
+        
+        const errors = {}; 
         if (frequency === '') {
-            errors.frequency = '発生頻度を選択してください。';
+            errors.frequency = dict.error_frequency_required; // ★ 辞書
         }
         if (severity === '') {
-            errors.severity = '深刻度を選択してください。';
+            errors.severity = dict.error_severity_required; // ★ 辞書
         }
         if (steps.trim() === '') {
-            errors.steps = '再現手順を入力してください。';
+            errors.steps = dict.error_steps_required; // ★ 辞書
         }
 
-        // エラーが1つでもあれば、setErrorでまとめて更新し、処理を中断
         if (Object.keys(errors).length > 0) {
             console.log("エラーをセットしました:", errors);
-            setError(errors); // ★ エラーオブジェクト全体をStateにセット ★
+            setError(errors); 
         } else {
-            // ★ エラーがなかった場合のみ、このブロックを実行 ★
-            // エラー表示をクリアし、送信ステータスを更新
             setError({});
             setSubmissionStatus('submitting');
 
@@ -176,14 +160,15 @@ export default function BugReportForm({ dict, lang}) {
             formData.append('frequency', frequency);
             formData.append('severity', severity);
             formData.append('steps', steps);
-            formData.append('expectedBehavior', expectedBehavior); // 期待した動作
-            formData.append('message', message); // 補足情報
+            formData.append('expectedBehavior', expectedBehavior); 
+            formData.append('message', message); 
             formData.append('gameVersion', gameVersion);
             formData.append('os', operatingSystem);
             formData.append('pcSpecs', pcSpecs);
-            formData.append('contactInfo', contactInfo); // 連絡先
-            formData.append('consent', consent);       // 同意チェック (true/falseが文字列として送られます)
+            formData.append('contactInfo', contactInfo); 
+            formData.append('consent', consent);       
             formData.append('g-recaptcha-response', recaptchaToken);
+            // ★ language は <input type="hidden"> で送信されます
 
             if (screenshots.length > 0) {
                 screenshots.forEach(({ file }) => {
@@ -191,30 +176,23 @@ export default function BugReportForm({ dict, lang}) {
                 });
             }
             
-
-            // 1. 実際の送信処理 (Promise)
       const fetchPromise = fetch("/", { method: "POST", body: formData })
         .then(response => {
           if (!response.ok) {
-            // Netlifyサーバーがエラーを返した場合
             throw new Error(`サーバーエラー: ${response.status} ${response.statusText}`);
           }
-          // 成功レスポンスを次に渡す (ここではまだ state を変更しない)
           return response; 
         });
 
-      // 2. 最低でも1.5秒間待つためのタイマー (1500ミリ秒)
+      // ★ 500ms から 3000ms (3秒) に変更
       const minimumDisplayTimePromise = new Promise(resolve => {
-        setTimeout(resolve, 500); 
+        setTimeout(resolve, 3000); 
       });
 
-      // 3. 「送信処理」と「1.5秒タイマー」の両方が完了するのを待つ
       Promise.all([fetchPromise, minimumDisplayTimePromise])
         .then(([fetchResponse]) => {
-          // ★ 両方完了したら（送信成功＆1.5秒経過）、成功画面に切り替える
           setSubmissionStatus('success');
           
-          // ★ 成功時のリセット処理 (リセット項目をすべてここに集約)
           setName('');
           setMessage('');
           clearScreenshots();
@@ -232,22 +210,18 @@ export default function BugReportForm({ dict, lang}) {
           recaptchaRef.current?.reset();
         })
         .catch((fetchError) => { 
-          // ★ ネットワークエラー、またはサーバーエラーのどちらかが発生した場合
           setSubmissionStatus('error');
           console.error("フォーム送信エラー:", fetchError); 
 
           if (fetchError.message.startsWith('サーバーエラー')) {
-            setError({ form: 'サーバー側で問題が発生しました。時間をおいて再試行してください。' });
+            setError({ form: dict.error_server }); // ★ 辞書
           } else {
-            // fetch自体が失敗した場合（ネットワーク接続の問題など）
-            setError({ form: '送信に失敗しました。ネットワーク接続を確認してください。' });
+            setError({ form: dict.error_network }); // ★ 辞書
           }
-
-          // エラー時も reCAPTCHA はリセット
           setRecaptchaToken(null);
           recaptchaRef.current?.reset();
         });
-        } // elseブロックの閉じ括弧
+        } 
     }
 
         
@@ -255,7 +229,6 @@ export default function BugReportForm({ dict, lang}) {
 if (submissionStatus === 'success') {
     return (
       <div className="submission-success" style={{ textAlign: 'center' }}>
-        {/* ★ 辞書からテキストを読み込む */}
         <h3>{dict.submit_success_title}</h3>
         <p>{dict.submit_success_message}</p>
         <button
@@ -264,8 +237,7 @@ if (submissionStatus === 'success') {
           className="cta-button" 
           style={{width:'auto', marginTop:'20px'}}
         >
-          {/* ★ このテキストも辞書から読み込む (要追加) */}
-          さらに報告する 
+          {dict.submit_another_button} {/* ★ 辞書 */}
         </button>
       </div>
     );
@@ -274,14 +246,16 @@ if (submissionStatus === 'success') {
   // --- 通常時・送信中・エラー時のフォーム表示 ---
     return (
        <form name="game-bug-report" data-netlify="true" netlify-honeypot="bot-field" onSubmit={handleSubmit} encType="multipart/form-data">
-            {/* 隠しフィールド */}
-           <input type="hidden" name="language" value={lang} />
-      
-      {/* ... (他の隠しフィールド) ... */}
+            <input type="hidden" name="form-name" value="game-bug-report" />
+            <input type="hidden" name="language" value={lang} />
+            <p className="hidden" style={{ display: 'none' }}>
+                <label>
+                    Don’t fill this out if you’re human: <input name="bot-field" />
+                </label>
+            </p>
       
       {/* --- ★発生頻度 (Select Box)★ --- */}
       <div className="form-group">
-        {/* ★ 辞書から読み込む */}
         <label htmlFor="frequency">{dict.frequency_label}</label>
         <select
           id="frequency"
@@ -292,7 +266,6 @@ if (submissionStatus === 'success') {
           className={error?.frequency ? 'is-invalid' : ''}
           aria-invalid={error?.frequency ? "true" : "false"}
         >
-          {/* ★ 辞書から読み込む */}
           <option value="" disabled>{dict.frequency_placeholder}</option>
           <option value="always">{dict.frequency_always}</option>
           <option value="sometimes">{dict.frequency_sometimes}</option>
@@ -303,7 +276,6 @@ if (submissionStatus === 'success') {
 
       {/* --- ★深刻度 (Select Box)★ --- */}
       <div className="form-group">
-        {/* ★ 辞書から読み込む */}
         <label htmlFor="severity">{dict.severity_label}</label>
         <select
           id="severity"
@@ -314,7 +286,6 @@ if (submissionStatus === 'success') {
           className={error?.severity ? 'is-invalid' : ''}
           aria-invalid={error?.severity ? "true" : "false"}
         >
-          {/* ★ 辞書から読み込む */}
           <option value="" disabled>{dict.severity_placeholder}</option>
           <option value="crash">{dict.severity_crash}</option>
           <option value="blocking">{dict.severity_blocking}</option>
@@ -334,7 +305,7 @@ if (submissionStatus === 'success') {
           required
           value={steps}
           onChange={(e) => setSteps(e.target.value)}
-          placeholder={dict.steps_placeholder} // ★ 辞書から
+          placeholder={dict.steps_placeholder} 
           className={error?.steps ? 'is-invalid' : ''}
           aria-invalid={error?.steps ? "true" : "false"}
         />
@@ -350,45 +321,42 @@ if (submissionStatus === 'success') {
           rows="3"
           value={expectedBehavior}
           onChange={(e) => setExpectedBehavior(e.target.value)}
-          placeholder={dict.expected_placeholder} // ★ 辞書から
+          placeholder={dict.expected_placeholder} 
         />
       </div>
             {/* --- スクリーンショット入力 --- */}
             <div className="form-group">
-                <label htmlFor="screenshot-button">スクリーンショット (任意)</label>
+                <label htmlFor="screenshot-button">{dict.screenshot_label}</label>
 
                 <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '-5px', marginBottom: '10px' }}>
-                    最大10MBまでの画像ファイル (PNG, JPG, GIF) を添付できます。
+                    {dict.screenshot_desc_1}
                     <br />
                     <strong style={{ color: '#e0e0e0' }}>
-                        もし動画を提供いただける場合は、お手数ですが
-                        {/* ここがリンクです */}
+                        {dict.screenshot_desc_2}
                         <a
                             href="mailto:lv1norasubosutomohigara@gmail.com"
                             style={{
-                                color: '#60a5fa', /* 明るい青色 */
-                                textDecoration: 'underline' /* 下線 */
+                                color: '#60a5fa', 
+                                textDecoration: 'underline' 
                             }}
                         >
                             lv1norasubosutomohigara@gmail.com
                         </a>
-                        まで直接お送りください。
+                         {dict.screenshot_desc_3}
                     </strong>
                 </p>
 
                 <div className="screenshot-input-wrapper">
-                    {/* 隠しファイル入力 */}
                     <input
                         type="file"
                         id="screenshot-input"
-                        name="screenshot" // Netlifyが認識する名前
+                        name="screenshot" 
                         accept="image/png, image/jpeg, image/gif"
                         style={{ display: 'none' }}
                         ref={fileInputRef}
-                        multiple // 複数ファイル選択を許可
-                        onChange={(e) => handleFiles(e.target.files)} // 共通のファイル処理関数を呼ぶ
+                        multiple 
+                        onChange={(e) => handleFiles(e.target.files)} 
                     />
-                    {/* ファイル選択ボタン */}
                     <button
                         type="button"
                         id="screenshot-button"
@@ -396,13 +364,11 @@ if (submissionStatus === 'success') {
                         onClick={() => fileInputRef.current?.click()}
                         style={{ width: 'auto', marginBottom: '10px' }}
                     >
-                        ファイルを選択...
+                        {dict.screenshot_button}
                     </button>
 
-                    {/* プレビューエリア (Reactでレンダリング) */}
                     <div className="paste-area">
                         {screenshots.length > 0 ? (
-                            // screenshots配列をmapしてプレビューを表示
                             screenshots.map((screenshot, index) => (
                                 <div key={index} className="preview-item">
                                     <img
@@ -410,120 +376,102 @@ if (submissionStatus === 'success') {
                                         alt={`Screenshot preview ${index + 1}`}
                                         className="pasted-image-preview"
                                     />
-                                    {/* 削除ボタン (×印) */}
                                     <button
                                         type="button"
-                                        onClick={() => handleDeleteScreenshot(index)} // クリックで削除関数を呼ぶ
+                                        onClick={() => handleDeleteScreenshot(index)} 
                                         className="delete-preview-button"
-                                        aria-label={`スクリーンショット ${index + 1} を削除`} // アクセシビリティのため
+                                        aria-label={dict.screenshot_delete_aria.replace('{index}', index + 1)}
                                     >
                                         ×
                                     </button>
                                 </div>
                             ))
                         ) : (
-                            // 画像がない場合はプレースホルダーを表示
-                            <p className="paste-area-placeholder">または、ここに画像をペースト (Ctrl+V)</p>
+                            <p className="paste-area-placeholder">{dict.screenshot_paste_placeholder}</p>
                         )}
                     </div>
                 </div>
             </div>
 
-
-            {/* ★★★ 補足情報のセクション ★★★ */}
             <div className="form-group">
-                <label htmlFor="message-bug">補足情報 (任意)</label> {/* ラベルを変更 */}
-
-                {/* ★ 前回のラッパーやimgタグは削除し、textareaだけに戻します ★ */}
-                <textarea id="message-bug" name="message" rows="5" value={message} onChange={(e) => setMessage(e.target.value)} /> {/* requiredを削除 */}
+                <label htmlFor="message-bug">{dict.message_label}</label>
+                <textarea id="message-bug" name="message" rows="5" value={message} onChange={(e) => setMessage(e.target.value)} />
             </div>
 
-            {/* --- ★ゲームバージョン (Input Text)★ --- */}
             <div className="form-group">
-                <label htmlFor="gameVersion">ゲームバージョン (任意)</label>
+                <label htmlFor="gameVersion">{dict.version_label}</label>
                 <input
                     type="text"
                     id="gameVersion"
-                    name="gameVersion" // Netlifyで認識される名前
+                    name="gameVersion" 
                     value={gameVersion}
                     onChange={(e) => setGameVersion(e.target.value)}
-                    placeholder="例: v1.0.1"
+                    placeholder={dict.version_placeholder}
                 />
             </div>
-            <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '-5px' }}>ゲームのタイトル画面の右下などに表示されています (例: v1.0.1)</p>
-            {/* --- ★OS (Input Text)★ --- */}
+            <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '-5px' }}>{dict.version_desc}</p>
+            
             <div className="form-group">
-                <label htmlFor="os">OS (任意)</label>
+                <label htmlFor="os">{dict.os_label}</label>
                 <input
                     type="text"
                     id="os"
-                    name="os" // Netlifyで認識される名前
+                    name="os" 
                     value={operatingSystem}
                     onChange={(e) => setOperatingSystem(e.target.value)}
-                    placeholder="例: Windows 11 Home"
+                    placeholder={dict.os_placeholder}
                 />
             </div>
 
-            {/* --- ★PCスペック (Textarea)★ --- */}
             <div className="form-group">
-                <label htmlFor="pcSpecs">PCスペック (任意)</label>
+                <label htmlFor="pcSpecs">{dict.specs_label}</label>
                 <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '-5px', marginBottom: '10px' }}>
-                    可能であれば、CPU・GPU (グラフィックボード)・RAM (メモリ) をご記入ください。
+                    {dict.specs_desc_1}
                     <br />
-                    (Windows: 「DxDiag」コマンド, Mac: 「このMacについて」で確認できます)
+                    {dict.specs_desc_2}
                 </p>
                 <textarea
                     id="pcSpecs"
-                    name="pcSpecs" // Netlifyで認識される名前
+                    name="pcSpecs" 
                     rows="4"
                     value={pcSpecs}
                     onChange={(e) => setPcSpecs(e.target.value)}
-                    placeholder={
-                        `例:
-CPU: Intel Core i7-12700
-GPU: NVIDIA GeForce RTX 3070
-RAM: 32GB`
-                    }
+                    placeholder={dict.specs_placeholder.replace(/\\n/g, '\n')}
                 />
             </div>
 
-            {/* --- ★↓ ここから追加 ↓★ --- */}
-            {/* --- ★連絡先 (Input Text)★ --- */}
             <div className="form-group">
-                <label htmlFor="contactInfo">連絡先 (任意)</label>
+                <label htmlFor="contactInfo">{dict.contact_label}</label>
                 <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '-5px', marginBottom: '10px' }}>
-                    バグの詳細について開発者から連絡する場合があります。
+                    {dict.contact_desc}
                 </p>
                 <input
                     type="text"
                     id="contactInfo"
-                    name="contactInfo" // Netlifyで認識される名前
+                    name="contactInfo" 
                     value={contactInfo}
                     onChange={(e) => setContactInfo(e.target.value)}
-                    placeholder="例: user@example.com または Twitter ID: @username"
+                    placeholder={dict.contact_placeholder}
                 />
             </div>
 
-            {/* --- ★同意チェックボックス★ --- */}
             <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <input
                     type="checkbox"
                     id="consent"
-                    name="consent" // Netlifyで認識される名前
+                    name="consent" 
                     checked={consent}
                     onChange={(e) => setConsent(e.target.checked)}
-                    style={{ width: 'auto', height: 'auto', margin: 0 }} // スタイルを調整
+                    style={{ width: 'auto', height: 'auto', margin: 0 }} 
                 />
-                {/* チェックボックスの隣に配置し、マージンをリセット */}
                 <label htmlFor="consent" style={{ marginBottom: 0, fontWeight: 'normal' }}>
-                    上記連絡先に開発者が連絡することに同意します。
+                    {dict.consent_label}
                 </label>
             </div>
 
-            {/* バリデーションエラーメッセージ */}
             {error?.form && (
                 <p
-                    id="form-error-message" // IDは残しても良い
+                    id="form-error-message" 
                     className="error-message"
                     role="alert"
                 >
@@ -533,37 +481,26 @@ RAM: 32GB`
            <div className="form-group" style={{ display: 'flex', justifyContent: 'center' }}>
         <Recaptcha
           ref={recaptchaRef}
-          // ★ 環境変数からサイトキーを読み込み
           sitekey={process.env.NEXT_PUBLIC_SITE_RECAPTCHA_KEY || ''}
-          // ★ 検証成功時にトークンを state にセット
           onChange={(token) => setRecaptchaToken(token)}
-          // ★ 期限切れ時に state をリセット
           onExpired={() => setRecaptchaToken(null)} 
         />
       </div>
             
-            {/* 送信ボタン */}
             <div className="form-group">
         <button type="submit" className="cta-button" disabled={submissionStatus === 'submitting'}>
           {submissionStatus === 'submitting' ? dict.submitting_button : dict.submit_button}
         </button>
       </div>
-            {/* ★★★ GIF画像をフォームの最後に追加 ★★★ */}
-            {/* (publicフォルダに move.gif を配置してください) */}
 
-            {/* move.gifを常に表示 */}
             <img
                 src="/move.gif"
                 alt="decorative animation"
                 className="character-move"
             />
-
-            {/* 発生頻度が「必ず発生する」の場合にkomarigao.pngを表示 */}
             {frequency === 'always' && (
                 <img src="/komarigao.png" alt="decorative animation" className="character-komari" />
             )}
-
-            {/* 深刻度が「クラッシュする」の場合にkomarigao2.pngを表示 */}
             {severity === 'crash' && (
                 <img
                     src="/komarigao2.png"
@@ -573,9 +510,9 @@ RAM: 32GB`
             )}
            {submissionStatus === 'submitting' && (
         <img
-          src="/transmission-unscreen.gif" /* ★ 新しいファイル名 */
+          src="/transmission-unscreen.gif" 
           alt="Submitting..."
-          className="character-transmission" /* ★ CSSクラスで制御 */
+          className="character-transmission" 
         />
       )}
         </form>
