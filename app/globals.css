@@ -225,8 +225,8 @@ textarea:invalid {
 .character-move {
   width: 350px !important; 
   height: 350px !important;
-  right: 360px !important; /* フォームの右端からの位置 */
-  top: 433px !important; /* フォームの上からの位置 */
+  right: 240px !important; /* フォームの右端からの位置 */
+  top: 575px !important; /* フォームの上からの位置 */
 }
 
 /* ★ komarigao.png 用のスタイル */
@@ -252,6 +252,6 @@ textarea:invalid {
   height: 700px !important;
   left: 50% !important; /* ★ フォームに対して水平中央に */
   transform: translateX(-50%) !important; /* ★ 水平中央のためのおまじない */
-  top: 1650px !important; /* ★ フォームの上から350px (適宜調整してください) */
+  top: 1800px !important; /* ★ フォームの上から350px (適宜調整してください) */
   z-index: 10 !important; /* ★ 他の要素より手前に表示 */
 }
