@@ -5,7 +5,13 @@ import { promises as fs } from 'fs';
 import path from 'path';
 // ▼▼▼ エイリアスパス (@/) を使ってインポート ▼▼▼
 import BugReportForm from '@/components/BugReportForm'; 
-
+export async function generateStaticParams() {
+  // 'ja' と 'en' のページをビルド時に生成するよう指示
+  return [
+    { lang: 'ja' },
+    { lang: 'en' },
+  ];
+}
 /**
  * URLの [lang] に応じて辞書ファイル (ja.json, en.json) を読み込む関数
  */

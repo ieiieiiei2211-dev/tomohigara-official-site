@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  //output: 'export',
+  output: 'export',
 };
 
 // "module.exports" の代わりに "export default" を使います

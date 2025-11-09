@@ -13,6 +13,14 @@ async function getDictionary(lang) {
  * トップページの本体 (Server Component)
  * このページが /ja や /en に対応します。
  */
+
+export async function generateStaticParams() {
+  // 'ja' と 'en' のページをビルド時に生成するよう指示
+  return [
+    { lang: 'ja' },
+    { lang: 'en' },
+  ];
+}
 export default async function BugReportPage({ params: { lang } }) {
   const dictionary = await getDictionary(lang);
   return (
