@@ -493,28 +493,30 @@ if (submissionStatus === 'success') {
         </button>
       </div>
 
-            <img
-                src="/move.gif"
-                alt="decorative animation"
-                className="character-move"
-            />
-            {frequency === 'always' && (
-                <img src="/komarigao.png" alt="decorative animation" className="character-komari" />
-            )}
-            {severity === 'crash' && (
-                <img
-                    src="/komarigao2.png"
-                    alt="decorative animation"
-                    className="character-komari2"
-                />
-            )}
-           {submissionStatus === 'submitting' && (
+      {/* 
         <img
-          src="/transmission-unscreen.gif" 
-          alt="Submitting..."
-          className="character-transmission" 
+            src="/move.gif"
+            alt="decorative animation"
+            className="character-move"
         />
-      )}
+        {frequency === 'always' && (
+            <img src="/komarigao.png" alt="decorative animation" className="character-komari" />
+        )}
+        {severity === 'crash' && (
+            <img
+                src="/komarigao2.png"
+                alt="decorative animation"
+                className="character-komari2"
+            />
+        )}
+        {submissionStatus === 'submitting' && (
+          <img
+            src="/transmission-unscreen.gif" 
+            alt="Submitting..."
+            className="character-transmission" 
+          />
+        )}
+      */}
         </form>
     );
 }
